@@ -4,6 +4,9 @@ const cors = require('cors');
 //const jwt = require('jsonwebtoken');
 const app = express();
 require('dotenv').config()
+
+const { ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion } = require('mongodb');
 const port = process.env.PORT || 5000;
 
 app.use(cors(
@@ -19,7 +22,7 @@ app.use(cors(
   app.use(express.json());
 
   
-const { MongoClient, ServerApiVersion } = require('mongodb');
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.moucvko.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -34,7 +37,31 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
 
+    //collections
     const userCollection = client.db("serenityHeaven").collection("user");
+    const apartmentCollection = client.db("serenityHeaven").collection("apartments");
+
+
+    //apartment parts
+    app.get('/apartments', async (req, res) => {
+      const result = await apartmentCollection.find().toArray();
+      res.send(result);
+    })
+
+
+    //user part 
+    app.post('/user', async (req, res) => {
+        const user = req.body;
+        // insert email if user doesnt exists: 
+        // you can do this many ways (1. email unique, 2. upsert 3. simple checking)
+        const query = { email: user.email }
+        const existingUser = await userCollection.findOne(query);
+        if (existingUser) {
+          return res.send({ message: 'user already exists', insertedId: null })
+        }
+        const result = await userCollection.insertOne(user);
+        res.send(result);
+      });
 
 
 
@@ -49,3 +76,12 @@ async function run() {
   }
 }
 run().catch(console.dir);
+
+
+app.get('/', (req, res) => {
+  res.send('boss is sitting')
+})
+
+app.listen(port, () => {
+  console.log(`Bistro boss is sitting on port ${port}`);
+})
