@@ -153,8 +153,22 @@ async function run() {
       res.send(result);
     })
 
+     //make member using email
+     app.patch('/users/:email', verifyToken, verifyAdmin, async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const updatedDoc = {
+        $set: {
+          role: 'member'
+        }
+      }
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
+
+
     //Remove member set to user
-    app.patch('/users/:id', verifyToken, verifyAdmin, async (req, res) => {
+    app.patch('/users/user/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
@@ -165,6 +179,8 @@ async function run() {
       const result = await userCollection.updateOne(filter, updatedDoc);
       res.send(result);
     })
+
+    
 
     //member show
     app.get('/users/member/:email', verifyToken, async (req, res) => {
@@ -206,18 +222,45 @@ async function run() {
 
 
     //agreement parts
+
     app.get('/agreements', async (req, res) => {
-      const email = req.query.email;
-      const query = { email: email };
-      const result = await agreementCollection.find(query).toArray();
+      
+      const result = await agreementCollection.find().toArray();
       res.send(result);
     })
+
+
 
     app.post('/agreements', async (req, res) => {
       const agreementItem = req.body;
       const result = await agreementCollection.insertOne(agreementItem);
       res.send(result);
     });
+
+    app.patch('/agreements/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const item = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          status: item.status,
+          acceptDate: item.acceptDate
+        }
+      }
+      const result = await agreementCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
+    // app.patch('/agreements/checked/:id', verifyToken, verifyAdmin, async (req, res) => {
+    //   const id = req.params.id;
+    //   const filter = { _id: new ObjectId(id) };
+    //   const updatedDoc = {
+    //     $set: {
+    //       status: 'Checked'
+    //     }
+    //   }
+    //   const result = await agreementCollection.updateOne(filter, updatedDoc);
+    //   res.send(result);
+    // })
 
 
     //apartment parts
