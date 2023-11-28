@@ -153,6 +153,19 @@ async function run() {
       res.send(result);
     })
 
+    //Remove member set to user
+    app.patch('/users/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: 'user'
+        }
+      }
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
+
     //member show
     app.get('/users/member/:email', verifyToken, async (req, res) => {
       const email = req.params.email;
