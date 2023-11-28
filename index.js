@@ -41,6 +41,7 @@ async function run() {
     const userCollection = client.db("serenityHeaven").collection("users");
     const apartmentCollection = client.db("serenityHeaven").collection("apartments");
     const agreementCollection = client.db("serenityHeaven").collection("agreements");
+    const announcementCollection = client.db("serenityHeaven").collection("announcements");
 
     // jwt related api
     app.post('/jwt', async (req, res) => {
@@ -76,16 +77,16 @@ async function run() {
       next();
     }
     // use verify member after verifyToken
-    const verifyMember = async (req, res, next) => {
-      const email = req.decoded.email;
-      const query = { email: email };
-      const user = await userCollection.findOne(query);
-      const isMember = user?.role === 'member';
-      if (!isMember) {
-        return res.status(403).send({ message: 'forbidden access' });
-      }
-      next();
-    }
+    // const verifyMember = async (req, res, next) => {
+    //   const email = req.decoded.email;
+    //   const query = { email: email };
+    //   const user = await userCollection.findOne(query);
+    //   const isMember = user?.role === 'member';
+    //   if (!isMember) {
+    //     return res.status(403).send({ message: 'forbidden access' });
+    //   }
+    //   next();
+    // }
 
     // users related api
      app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
@@ -169,10 +170,24 @@ async function run() {
       res.send({ member });
     })
 
+
+    //delete user
     app.delete('/users/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
       const result = await userCollection.deleteOne(query);
+      res.send(result);
+    })
+
+    //announcement part
+    app.post('/announcements', verifyToken, verifyAdmin, async (req, res) => {
+      const announcementItem = req.body;
+      const result = await announcementCollection.insertOne(announcementItem);
+      res.send(result);
+    })
+
+    app.get('/announcements', async (req,res)=>{
+      const result = await announcementCollection.find().toArray();
       res.send(result);
     })
 
