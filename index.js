@@ -42,6 +42,7 @@ async function run() {
     const apartmentCollection = client.db("serenityHeaven").collection("apartments");
     const agreementCollection = client.db("serenityHeaven").collection("agreements");
     const announcementCollection = client.db("serenityHeaven").collection("announcements");
+    const couponCollection = client.db("serenityHeaven").collection("coupons");
 
     // jwt related api
     app.post('/jwt', async (req, res) => {
@@ -76,17 +77,7 @@ async function run() {
       }
       next();
     }
-    // use verify member after verifyToken
-    // const verifyMember = async (req, res, next) => {
-    //   const email = req.decoded.email;
-    //   const query = { email: email };
-    //   const user = await userCollection.findOne(query);
-    //   const isMember = user?.role === 'member';
-    //   if (!isMember) {
-    //     return res.status(403).send({ message: 'forbidden access' });
-    //   }
-    //   next();
-    // }
+    
 
     // users related api
      app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
@@ -221,6 +212,30 @@ async function run() {
     })
 
 
+    //coupon part
+    app.get('/coupons', async (req, res) => {
+      
+      const result = await couponCollection.find().toArray();
+      res.send(result);
+    })
+
+
+
+    //create coupon
+    app.post('/coupons', verifyToken, verifyAdmin, async (req, res) => {
+      const couponItem = req.body;
+      const result = await couponCollection.insertOne(couponItem);
+      res.send(result);
+    });
+
+    //delete coupon
+    app.delete('/coupons/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await couponCollection.deleteOne(query);
+      res.send(result);
+    })
+
     //agreement parts
 
     app.get('/agreements', async (req, res) => {
@@ -250,17 +265,7 @@ async function run() {
       const result = await agreementCollection.updateOne(filter, updatedDoc);
       res.send(result);
     })
-    // app.patch('/agreements/checked/:id', verifyToken, verifyAdmin, async (req, res) => {
-    //   const id = req.params.id;
-    //   const filter = { _id: new ObjectId(id) };
-    //   const updatedDoc = {
-    //     $set: {
-    //       status: 'Checked'
-    //     }
-    //   }
-    //   const result = await agreementCollection.updateOne(filter, updatedDoc);
-    //   res.send(result);
-    // })
+   
 
 
     //apartment parts
