@@ -40,6 +40,7 @@ async function run() {
     //collections
     const userCollection = client.db("serenityHeaven").collection("users");
     const apartmentCollection = client.db("serenityHeaven").collection("apartments");
+    const agreementCollection = client.db("serenityHeaven").collection("agreements");
 
     // jwt related api
     app.post('/jwt', async (req, res) => {
@@ -128,6 +129,19 @@ async function run() {
       const result = await userCollection.deleteOne(query);
       res.send(result);
     })
+
+
+    //agreement parts
+    app.get('/agreements', async (req, res) => {
+      const result = await agreementCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.post('/agreements', async (req, res) => {
+      const agreementItem = req.body;
+      const result = await agreementCollection.insertOne(agreementItem);
+      res.send(result);
+    });
 
 
     //apartment parts
