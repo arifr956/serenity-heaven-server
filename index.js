@@ -10,18 +10,18 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const port = process.env.PORT || 5000;
 
 app.use(cors(
-    //{
-//     origin: [
-//       'http://localhost:5173',
-//       //'https://study-mate-client.web.app',
-//       //`https://study-mate-client.firebaseapp.com`,
-//   ],
-//   //credentials: true
- // }
-  ));
-  app.use(express.json());
+  {
+    origin: [
+      'http://localhost:5173',
+      'https://serenity-heaven-client-c3712.web.app/',
+      `https://serenity-heaven-client-c3712.firebaseapp.com/`,
+    ],
+    credentials: true
+  }
+));
+app.use(express.json());
 
-  
+
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.moucvko.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -77,10 +77,10 @@ async function run() {
       }
       next();
     }
-    
+
 
     // users related api
-     app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
+    app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
@@ -101,7 +101,7 @@ async function run() {
       }
       res.send({ admin });
     })
-    
+
 
     app.post('/users', async (req, res) => {
       const user = req.body;
@@ -119,7 +119,7 @@ async function run() {
     //make admin
     // admin email: arif@gmail.com password: Arif12@
 
-     app.patch('/users/admin/:id', verifyToken, verifyAdmin, async (req, res) => {
+    app.patch('/users/admin/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
@@ -144,8 +144,8 @@ async function run() {
       res.send(result);
     })
 
-     //make member using email
-     app.patch('/users/:email', verifyToken, verifyAdmin, async (req, res) => {
+    //make member using email
+    app.patch('/users/:email', verifyToken, verifyAdmin, async (req, res) => {
       const email = req.params.email;
       const filter = { email: email };
       const updatedDoc = {
@@ -171,7 +171,7 @@ async function run() {
       res.send(result);
     })
 
-    
+
 
     //member show
     app.get('/users/member/:email', verifyToken, async (req, res) => {
@@ -206,7 +206,7 @@ async function run() {
       res.send(result);
     })
 
-    app.get('/announcements', async (req,res)=>{
+    app.get('/announcements', async (req, res) => {
       const result = await announcementCollection.find().toArray();
       res.send(result);
     })
@@ -214,7 +214,7 @@ async function run() {
 
     //coupon part
     app.get('/coupons', async (req, res) => {
-      
+
       const result = await couponCollection.find().toArray();
       res.send(result);
     })
@@ -239,7 +239,7 @@ async function run() {
     //agreement parts
 
     app.get('/agreements', async (req, res) => {
-      
+
       const result = await agreementCollection.find().toArray();
       res.send(result);
     })
@@ -265,7 +265,7 @@ async function run() {
       const result = await agreementCollection.updateOne(filter, updatedDoc);
       res.send(result);
     })
-   
+
 
 
     //apartment parts
@@ -274,25 +274,37 @@ async function run() {
       res.send(result);
     })
 
+    app.patch('/apartments/apartment/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id)};
+      const updatedDoc = {
+        $set: {
+          status: 'booked',
+        }
+      }
+      const result = await apartmentCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
+
+    //user part 
     app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
 
 
-    //user part 
     app.post('/user', async (req, res) => {
-        const user = req.body;
-        // insert email if user doesnt exists: 
-        // you can do this many ways (1. email unique, 2. upsert 3. simple checking)
-        const query = { email: user.email }
-        const existingUser = await userCollection.findOne(query);
-        if (existingUser) {
-          return res.send({ message: 'user already exists', insertedId: null })
-        }
-        const result = await userCollection.insertOne(user);
-        res.send(result);
-      });
+      const user = req.body;
+      // insert email if user doesnt exists: 
+      // you can do this many ways (1. email unique, 2. upsert 3. simple checking)
+      const query = { email: user.email }
+      const existingUser = await userCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: 'user already exists', insertedId: null })
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
 
 
 
