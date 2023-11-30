@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-//const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const app = express();
 require('dotenv').config()
@@ -16,8 +15,8 @@ app.use(cors(
   {
     origin: [
       'http://localhost:5173',
-      'https://serenity-heaven-client-c3712.web.app/',
-      `https://serenity-heaven-client-c3712.firebaseapp.com/`,
+      'https://serenity-heaven-client-c3712.web.app',
+      `https://serenity-heaven-client-c3712.firebaseapp.com`,
     ],
     credentials: true
   }
@@ -364,8 +363,8 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     //await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     //await client.close();
