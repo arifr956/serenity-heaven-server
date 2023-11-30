@@ -4,10 +4,13 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const app = express();
 require('dotenv').config()
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const { ObjectId } = require('mongodb');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const port = process.env.PORT || 5000;
+//stripe
+
 
 app.use(cors(
   {
@@ -274,12 +277,22 @@ async function run() {
       res.send(result);
     })
 
+
+    app.get('/apartments/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await apartmentCollection.findOne(query);
+      res.send(result);
+    })
+
     app.patch('/apartments/apartment/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId(id)};
+      const item = req.body;
+      const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set: {
-          status: 'booked',
+          status: item.status,
+          userEmail: item.userEmail
         }
       }
       const result = await apartmentCollection.updateOne(filter, updatedDoc);
@@ -306,6 +319,24 @@ async function run() {
       res.send(result);
     });
 
+    //stripe payment part
+
+    app.post("/create-payment-intent", async (req, res) => {
+      const { discountedRent } = req.body;
+      // Create a PaymentIntent with the order amount and currency
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: discountedRent,
+        currency: "usd",
+        // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
 
 
     // Connect the client to the server	(optional starting in v4.7)
