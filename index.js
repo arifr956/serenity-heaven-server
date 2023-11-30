@@ -46,6 +46,7 @@ async function run() {
     const agreementCollection = client.db("serenityHeaven").collection("agreements");
     const announcementCollection = client.db("serenityHeaven").collection("announcements");
     const couponCollection = client.db("serenityHeaven").collection("coupons");
+    const paymentCollection = client.db("serenityHeaven").collection("payments");
 
     // jwt related api
     app.post('/jwt', async (req, res) => {
@@ -319,10 +320,29 @@ async function run() {
       res.send(result);
     });
 
+    //payment part
+    app.get('/payments/:email', verifyToken, async (req, res) => {
+      const query = { email: req.params.email }
+      if (req.params.email !== req.decoded.email) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    })
+
+
+
+    app.post('/payments', async (req, res) => {
+      const paymentItem = req.body;
+      const result = await paymentCollection.insertOne(paymentItem);
+      res.send(result);
+    });
+
     //stripe payment part
 
     app.post("/create-payment-intent", async (req, res) => {
       const { discountedRent } = req.body;
+      console.log(discountedRent, 'amount inside the intent')
       // Create a PaymentIntent with the order amount and currency
       const paymentIntent = await stripe.paymentIntents.create({
         amount: discountedRent,
@@ -333,8 +353,10 @@ async function run() {
         },
       });
 
+      console.log(paymentIntent.id),
       res.send({
         clientSecret: paymentIntent.client_secret,
+       
       });
     });
 
